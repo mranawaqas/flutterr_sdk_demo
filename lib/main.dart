@@ -1,12 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mapmetricflutterdemo/views.dart';
 import 'package:mapmetrics/mapmetrics.dart';
 
 import 'helping_methods.dart';
-import 'views.dart';
 
 Color primaryColor = Color(0xfff6f7f9);
 const Color accentColor = Color(0xffEC421B);
@@ -24,45 +25,81 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = false; // Track the current theme
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black, // title and icon colors
+          elevation: 0, // remove shadow if you want
+          centerTitle: true, // center the title if you want
+        ),
+        brightness: Brightness.light,
         iconButtonTheme: IconButtonThemeData(
           style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Colors.white),
           ),
         ),
-
         floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: Colors.white, // FAB background color
-          foregroundColor: Colors.black, // FAB icon color
+          backgroundColor: Colors.white,
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black87),
       ),
-      home: const MyHomePage(title: 'Home'),
+      darkTheme: ThemeData(
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        iconButtonTheme: IconButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.black),
+            foregroundColor: MaterialStateProperty.all(Colors.white),
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: MyHomePage(
+        title: 'Home',
+        onThemeChanged: (bool value) {
+          setState(() {
+            isDarkMode = value;
+          });
+        },
+        isDarkMode: isDarkMode,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  const MyHomePage({
+    super.key,
+    required this.title,
+    required this.onThemeChanged,
+    required this.isDarkMode,
+  });
 
   final String title;
+  final ValueChanged<bool> onThemeChanged;
+  final bool isDarkMode;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -75,41 +112,47 @@ class _MyHomePageState extends State<MyHomePage> {
 
   animateCamera(Position latlng) {
     userLatLng = latlng;
-    if (_controller != null) {
-      _controller.animateCamera(center: latlng, zoom: 15);
-    }
+    _controller.animateCamera(center: latlng, zoom: 15);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    double screeSize = MediaQuery.of(context).size.width;
+    double screenSize = MediaQuery.of(context).size.width;
+    String token = "";
+    if (Platform.isAndroid) {
+      token =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2E1MjQwMi1lY2M3LTQ3MzAtYTUxOS1mZDc5MTMwMTZlNmYiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4MzUyMTR9.VMOKZMLMWjl5G9cl4IoWZiuH9GATF-cpeA2gO7ZEuas";
+    } else {
+      token =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2E1MjQwMi1lY2M3LTQ3MzAtYTUxOS1mZDc5MTMwMTZlNmYiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4MzUyMTR9.VMOKZMLMWjl5G9cl4IoWZiuH9GATF-cpeA2gO7ZEuas";
+    }
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Colors.white,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
+        actions: [
+          Switch(
+            value: widget.isDarkMode,
+            onChanged: widget.onThemeChanged,
+            activeColor: Colors.white,
+            inactiveThumbColor: Colors.black,
+          ),
+        ],
       ),
       body: Stack(
         children: [
           MapLibreMap(
-            onMapCreated: (_controller) {
-              this._controller = _controller;
+            onMapCreated: (controller) {
+              _controller = controller;
             },
-
             options: MapOptions(
               initZoom: 15,
+
+              // initStyle:
+              //     "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
               initStyle:
-                  "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
+                  widget.isDarkMode
+                      ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
+                      : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
             ),
             onEvent: _onEvent,
             children: [
@@ -134,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Container(
-            width: screeSize,
+            width: screenSize,
             height: 20,
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -146,21 +189,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(left: 23, right: 23, top: 15),
-            width: screeSize,
+            margin: const EdgeInsets.only(left: 23, right: 23, top: 15),
+            width: screenSize,
             height: 50,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(5),
               boxShadow: [
-                BoxShadow(
+                const BoxShadow(
                   color: Color(0x6778849e),
                   offset: Offset(0, 10),
                   blurRadius: 15,
                   spreadRadius: 5,
                 ),
-                BoxShadow(color: Color(0x6778849e)),
-                BoxShadow(
+                const BoxShadow(color: Color(0x6778849e)),
+                const BoxShadow(
                   color: Color(0x6778849e),
                   offset: Offset(0, -2),
                   blurRadius: 5,
@@ -183,7 +226,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                   if (result != null) {
                     searchEditTextController.text = result.label!;
-
                     animateCamera(
                       Position(result.coordinates[0], result.coordinates[1]),
                     );
@@ -210,13 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } else if (event is MapEventMoveCamera) {
       userLatLng = event.camera.center;
-    } else if (event is MapEventCameraIdle) {
-      // print('widget.MapEventCameraIdle');
-      HelpingMethods()
-          .getAddress(userLatLng!.lat.toDouble(), userLatLng!.lng.toDouble())
-          .then((value) => searchEditTextController.text = value!.fullAddress!);
-    } else if (event is MapEventIdle) {
-      // print('widget.MapEventIdle');
+    } else if (event is MapEventCameraIdle || event is MapEventIdle) {
       HelpingMethods()
           .getAddress(userLatLng!.lat.toDouble(), userLatLng!.lng.toDouble())
           .then((value) => searchEditTextController.text = value!.fullAddress!);
@@ -236,6 +272,9 @@ class AddressSearch extends SearchDelegate<Suggestion> {
   List<Widget> buildActions(BuildContext context) {
     return [
       IconButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.white),
+        ),
         tooltip: 'Clear',
         icon: Icon(Icons.clear),
         onPressed: () {
@@ -248,6 +287,9 @@ class AddressSearch extends SearchDelegate<Suggestion> {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all(Colors.white),
+      ),
       tooltip: 'Back',
       icon: Icon(Icons.arrow_back),
       onPressed: () {
@@ -263,7 +305,9 @@ class AddressSearch extends SearchDelegate<Suggestion> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: FutureBuilder(
@@ -297,7 +341,7 @@ class AddressSearch extends SearchDelegate<Suggestion> {
                             ),
                         itemCount: snapshot.data!.length,
                       )
-                      : Container(child: Text('Loading...')),
+                      : Text('Loading...'),
         ),
       ),
     );
