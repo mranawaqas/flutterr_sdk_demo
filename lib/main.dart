@@ -33,22 +33,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        iconButtonTheme: IconButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.white),
+          ),
+        ),
+
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.white, // FAB background color
+          foregroundColor: Colors.black, // FAB icon color
+        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black87),
       ),
       home: const MyHomePage(title: 'Home'),
     );
@@ -99,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.white,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
@@ -109,16 +104,6 @@ class _MyHomePageState extends State<MyHomePage> {
           MapLibreMap(
             onMapCreated: (_controller) {
               this._controller = _controller;
-              // userLatLng = _controller.camera?.center;
-              // HelpingMethods()
-              //     .getAddress(
-              //       userLatLng!.lat.toDouble(),
-              //       userLatLng!.lng.toDouble(),
-              //     )
-              //     .then(
-              //       (value) =>
-              //           searchEditTextController.text = value!.fullAddress!,
-              //     );
             },
 
             options: MapOptions(
@@ -208,7 +193,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Center(child: Image.asset('src/bluepin.png', scale: 3)),
-          // MyHomePage(title: 'Places Autocomplete Demo'),
         ],
       ),
     );
