@@ -147,12 +147,12 @@ class _MyHomePageState extends State<MyHomePage> {
             options: MapOptions(
               initZoom: 15,
 
-              // initStyle:
-              //     "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
               initStyle:
-                  widget.isDarkMode
-                      ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
-                      : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
+                  "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
+              // initStyle:
+              //     widget.isDarkMode
+              //         ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
+              //         : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
             ),
             onEvent: _onEvent,
             children: [
@@ -235,6 +235,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Center(child: Image.asset('src/bluepin.png', scale: 3)),
+          Positioned(
+            bottom: 80,
+            left: 20,
+            child: Image.asset(
+              'src/logo.png', // <-- your icon path here
+              width: 85, // Adjust width if needed
+              height: 25,
+            ),
+          ),
         ],
       ),
     );
