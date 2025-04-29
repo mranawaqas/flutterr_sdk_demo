@@ -141,41 +141,46 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Stack(
         children: [
-          MapLibreMap(
-            key: ValueKey(widget.isDarkMode), // <<< ADD THIS LINE
-            onMapCreated: (controller) {
-              _controller = controller;
-            },
-            options: MapOptions(
-              initZoom: 15,
-              // initStyle:
-              //     "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token",
-              initStyle:
-                  widget.isDarkMode
-                      ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
-                      : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
-            ),
-            onEvent: _onEvent,
-            children: [
-              SourceAttribution(),
-              MapScalebar(),
-              MapControlButtons(
-                showTrackLocation: true,
-                showZoomInOutButton: true,
-                onCurrentLocation: (location) {
-                  userLatLng = location;
-                  HelpingMethods()
-                      .getAddress(
-                        userLatLng!.lat.toDouble(),
-                        userLatLng!.lng.toDouble(),
-                      )
-                      .then(
-                        (value) =>
-                            searchEditTextController.text = value!.fullAddress!,
-                      );
-                },
+          SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: MapLibreMap(
+              key: ValueKey(widget.isDarkMode), // <<< ADD THIS LINE
+              onMapCreated: (controller) {
+                _controller = controller;
+              },
+              options: MapOptions(
+                initZoom: 15,
+                // initStyle:
+                //     "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token",
+                initStyle:
+                    widget.isDarkMode
+                        ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
+                        : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
               ),
-            ],
+              onEvent: _onEvent,
+              children: [
+                SourceAttribution(),
+                MapScalebar(),
+                MapControlButtons(
+                  showTrackLocation: true,
+                  showZoomInOutButton: true,
+                  onCurrentLocation: (location) {
+                    userLatLng = location;
+                    HelpingMethods()
+                        .getAddress(
+                          userLatLng!.lat.toDouble(),
+                          userLatLng!.lng.toDouble(),
+                        )
+                        .then(
+                          (value) =>
+                              searchEditTextController.text =
+                                  value!.fullAddress!,
+                        );
+                  },
+                ),
+              ],
+            ),
           ),
           // Container(
           //   width: screenSize,
