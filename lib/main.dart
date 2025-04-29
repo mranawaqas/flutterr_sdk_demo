@@ -122,10 +122,10 @@ class _MyHomePageState extends State<MyHomePage> {
     String token = "";
     if (Platform.isAndroid) {
       token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2E1MjQwMi1lY2M3LTQ3MzAtYTUxOS1mZDc5MTMwMTZlNmYiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4MzUyMTR9.VMOKZMLMWjl5G9cl4IoWZiuH9GATF-cpeA2gO7ZEuas";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
     } else {
       token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2E1MjQwMi1lY2M3LTQ3MzAtYTUxOS1mZDc5MTMwMTZlNmYiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4MzUyMTR9.VMOKZMLMWjl5G9cl4IoWZiuH9GATF-cpeA2gO7ZEuas";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
     }
     return Scaffold(
       appBar: AppBar(
@@ -142,18 +142,18 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(
         children: [
           MapLibreMap(
+            key: ValueKey(widget.isDarkMode), // <<< ADD THIS LINE
             onMapCreated: (controller) {
               _controller = controller;
             },
             options: MapOptions(
               initZoom: 15,
-
-              initStyle:
-                  "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
               // initStyle:
-              //     widget.isDarkMode
-              //         ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
-              //         : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
+              //     "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token",
+              initStyle:
+                  widget.isDarkMode
+                      ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
+                      : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
             ),
             onEvent: _onEvent,
             children: [
@@ -177,18 +177,18 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
-          Container(
-            width: screenSize,
-            height: 20,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.white, Colors.white.withOpacity(0.0)],
-                stops: [0.5, 1],
-                end: Alignment.bottomCenter,
-                begin: Alignment.topCenter,
-              ),
-            ),
-          ),
+          // Container(
+          //   width: screenSize,
+          //   height: 20,
+          //   decoration: BoxDecoration(
+          //     gradient: LinearGradient(
+          //       colors: [Colors.white, Colors.white.withOpacity(0.0)],
+          //       stops: [0.5, 1],
+          //       end: Alignment.bottomCenter,
+          //       begin: Alignment.topCenter,
+          //     ),
+          //   ),
+          // ),
           Container(
             margin: const EdgeInsets.only(left: 23, right: 23, top: 15),
             width: screenSize,
