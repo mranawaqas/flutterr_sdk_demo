@@ -109,6 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late MapController _controller;
   TextEditingController searchEditTextController = TextEditingController();
   Position? userLatLng;
+  bool isSearched = false;
 
   animateCamera(Position latlng) {
     userLatLng = latlng;
@@ -216,19 +217,30 @@ class _MyHomePageState extends State<MyHomePage> {
                 controller: searchEditTextController,
                 textInputAction: TextInputAction.search,
                 hintText: "Search Location",
-                suffixIcon: "src/search_icon.png",
+                suffixIcon:
+                    isSearched ? "src/black_cross.png" : "src/search_icon.png",
                 readOnly: true,
                 onTap: () async {
-                  final sessionToken = Uuid().generateV4();
-                  final Suggestion? result = await showSearch(
-                    context: context,
-                    delegate: AddressSearch(sessionToken),
-                  );
-                  if (result != null) {
-                    searchEditTextController.text = result.label!;
-                    animateCamera(
-                      Position(result.coordinates[0], result.coordinates[1]),
+                  if (isSearched) {
+                    setState(() {
+                      isSearched = !isSearched;
+                      searchEditTextController.text = "";
+                    });
+                  } else {
+                    final sessionToken = Uuid().generateV4();
+                    final Suggestion? result = await showSearch(
+                      context: context,
+                      delegate: AddressSearch(sessionToken),
                     );
+                    if (result != null) {
+                      searchEditTextController.text = result.label!;
+                      animateCamera(
+                        Position(result.coordinates[0], result.coordinates[1]),
+                      );
+                    }
+                    setState(() {
+                      isSearched = true;
+                    });
                   }
                 },
               ),
