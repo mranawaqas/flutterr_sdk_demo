@@ -110,10 +110,17 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController searchEditTextController = TextEditingController();
   Position? userLatLng;
   bool isSearched = false;
+  final _points = <Point>[];
+  bool _imageLoaded = false;
 
   animateCamera(Position latlng) {
     userLatLng = latlng;
     _controller.animateCamera(center: latlng, zoom: 15);
+  }
+
+  Future<bool> _onWillPop() async {
+    Navigator.pop(context);
+    return Future<bool>.value(true);
   }
 
   @override
@@ -127,147 +134,173 @@ class _MyHomePageState extends State<MyHomePage> {
       token =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
     }
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          Switch(
-            value: widget.isDarkMode,
-            onChanged: widget.onThemeChanged,
-            activeColor: Colors.white,
-            inactiveThumbColor: Colors.black,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: double.infinity,
-            child: MapLibreMap(
-              key: ValueKey(widget.isDarkMode), // <<< ADD THIS LINE
-              onMapCreated: (controller) {
-                _controller = controller;
-              },
-              options: MapOptions(
-                initZoom: 15,
-                // initStyle:
-                //     "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token",
-                initStyle:
-                    widget.isDarkMode
-                        ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
-                        : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+          actions: [
+            Switch(
+              value: widget.isDarkMode,
+              onChanged: widget.onThemeChanged,
+              activeColor: Colors.white,
+              inactiveThumbColor: Colors.black,
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: MapLibreMap(
+                key: ValueKey(widget.isDarkMode),
+                onMapCreated: (controller) {
+                  _controller = controller;
+                },
+                options: MapOptions(
+                  initZoom: 15,
+                  // initStyle:
+                  //     "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
+                  initStyle:
+                      widget.isDarkMode
+                          ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
+                          : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
+                ),
+                onEvent: _onEvent,
+                layers: [
+                  // MarkerLayer(
+                  //   points: _points,
+                  //   textField: 'Marker',
+                  //   textAllowOverlap: true,
+                  //   iconImage: _imageLoaded ? 'marker' : null,
+                  //   iconSize: 0.08,
+                  //   iconAnchor: IconAnchor.bottom,
+                  //   textOffset: const [0, 1],
+                  // ),
+                ],
+                children: [
+                  SourceAttribution(),
+                  MapScalebar(),
+                  MapControlButtons(
+                    showTrackLocation: true,
+                    showZoomInOutButton: true,
+                    onCurrentLocation: (location) {
+                      userLatLng = location;
+                      HelpingMethods()
+                          .getAddress(
+                            userLatLng!.lat.toDouble(),
+                            userLatLng!.lng.toDouble(),
+                          )
+                          .then(
+                            (value) =>
+                                searchEditTextController.text =
+                                    value!.fullAddress!,
+                          );
+                    },
+                  ),
+                ],
               ),
-              onEvent: _onEvent,
-              children: [
-                SourceAttribution(),
-                MapScalebar(),
-                MapControlButtons(
-                  showTrackLocation: true,
-                  showZoomInOutButton: true,
-                  onCurrentLocation: (location) {
-                    userLatLng = location;
-                    HelpingMethods()
-                        .getAddress(
-                          userLatLng!.lat.toDouble(),
-                          userLatLng!.lng.toDouble(),
-                        )
-                        .then(
-                          (value) =>
-                              searchEditTextController.text =
-                                  value!.fullAddress!,
+            ),
+
+            Container(
+              margin: const EdgeInsets.only(left: 23, right: 23, top: 15),
+              width: screenSize,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: [
+                  const BoxShadow(
+                    color: Color(0x6778849e),
+                    offset: Offset(0, 10),
+                    blurRadius: 15,
+                    spreadRadius: 5,
+                  ),
+                  const BoxShadow(color: Color(0x6778849e)),
+                  const BoxShadow(
+                    color: Color(0x6778849e),
+                    offset: Offset(0, -2),
+                    blurRadius: 5,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: EditText(
+                  controller: searchEditTextController,
+                  textInputAction: TextInputAction.search,
+                  hintText: "Search Location",
+                  suffixIcon:
+                      isSearched
+                          ? "src/black_cross.png"
+                          : "src/search_icon.png",
+                  readOnly: true,
+                  onTap: () async {
+                    if (isSearched) {
+                      setState(() {
+                        isSearched = !isSearched;
+                        searchEditTextController.text = "";
+                      });
+                    } else {
+                      final sessionToken = Uuid().generateV4();
+                      final Suggestion? result = await showSearch(
+                        context: context,
+                        delegate: AddressSearch(sessionToken),
+                      );
+                      if (result != null) {
+                        searchEditTextController.text = result.label!;
+                        animateCamera(
+                          Position(
+                            result.coordinates[0],
+                            result.coordinates[1],
+                          ),
                         );
+                      }
+                      setState(() {
+                        isSearched = true;
+                      });
+                    }
                   },
                 ),
-              ],
-            ),
-          ),
-          // Container(
-          //   width: screenSize,
-          //   height: 20,
-          //   decoration: BoxDecoration(
-          //     gradient: LinearGradient(
-          //       colors: [Colors.white, Colors.white.withOpacity(0.0)],
-          //       stops: [0.5, 1],
-          //       end: Alignment.bottomCenter,
-          //       begin: Alignment.topCenter,
-          //     ),
-          //   ),
-          // ),
-          Container(
-            margin: const EdgeInsets.only(left: 23, right: 23, top: 15),
-            width: screenSize,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              boxShadow: [
-                const BoxShadow(
-                  color: Color(0x6778849e),
-                  offset: Offset(0, 10),
-                  blurRadius: 15,
-                  spreadRadius: 5,
-                ),
-                const BoxShadow(color: Color(0x6778849e)),
-                const BoxShadow(
-                  color: Color(0x6778849e),
-                  offset: Offset(0, -2),
-                  blurRadius: 5,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Center(
-              child: EditText(
-                controller: searchEditTextController,
-                textInputAction: TextInputAction.search,
-                hintText: "Search Location",
-                suffixIcon:
-                    isSearched ? "src/black_cross.png" : "src/search_icon.png",
-                readOnly: true,
-                onTap: () async {
-                  if (isSearched) {
-                    setState(() {
-                      isSearched = !isSearched;
-                      searchEditTextController.text = "";
-                    });
-                  } else {
-                    final sessionToken = Uuid().generateV4();
-                    final Suggestion? result = await showSearch(
-                      context: context,
-                      delegate: AddressSearch(sessionToken),
-                    );
-                    if (result != null) {
-                      searchEditTextController.text = result.label!;
-                      animateCamera(
-                        Position(result.coordinates[0], result.coordinates[1]),
-                      );
-                    }
-                    setState(() {
-                      isSearched = true;
-                    });
-                  }
-                },
               ),
             ),
-          ),
-          Center(child: Image.asset('src/bluepin.png', scale: 3)),
-          Positioned(
-            bottom: 80,
-            left: 20,
-            child: Image.asset(
-              'src/logo.png', // <-- your icon path here
-              width: 85, // Adjust width if needed
-              height: 25,
+            Center(child: Image.asset('src/bluepin.png', scale: 3)),
+            Positioned(
+              bottom: 80,
+              left: 20,
+              child: Image.asset(
+                'src/logo.png', // <-- your icon path here
+                width: 85, // Adjust width if needed
+                height: 25,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  void _onEvent(MapEvent event) {
-    if (event is MapEventMapCreated) {
+  Future<void> _onEvent(MapEvent event) async {
+    if (event is MapEventStyleLoaded) {
+      final response = await http.get(
+        Uri.parse(
+          'https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png',
+        ),
+      );
+      final bytes = response.bodyBytes;
+      await event.style.addImage('marker', bytes);
+      setState(() {
+        print("loaded");
+        _imageLoaded = true;
+      });
+    } else if (event is MapEventClick) {
+      print("here on long click");
+      print(event.point.lat);
+      setState(() {
+        _points.add(Point(coordinates: event.point));
+      });
+    } else if (event is MapEventMapCreated) {
       if (event.mapController.camera != null) {
         userLatLng = event.mapController.camera!.center;
         HelpingMethods()
@@ -331,9 +364,9 @@ class AddressSearch extends SearchDelegate<Suggestion> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final theme = Theme.of(context);
+    // final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      //  backgroundColor: theme.scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: FutureBuilder(
@@ -435,7 +468,7 @@ class PlaceApiProvider {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlN2E1MjQwMi1lY2M3LTQ3MzAtYTUxOS1mZDc5MTMwMTZlNmYiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4MzUyMTR9.VMOKZMLMWjl5G9cl4IoWZiuH9GATF-cpeA2gO7ZEuas';
     final request =
         'https://gateway.mapmetrics.org/v1/autocomplete?text=$input&token=$token';
-    print(request);
+    //print(request);
     final response = await http.get(Uri.parse(request));
 
     if (response.statusCode == 200) {
