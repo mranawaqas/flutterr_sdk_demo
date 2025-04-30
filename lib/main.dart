@@ -134,6 +134,14 @@ class _MyHomePageState extends State<MyHomePage> {
       token =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
     }
+    String nightFile =
+        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json&token=$token";
+    String lightFile =
+        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json&token=$token";
+    //   String lightFile =
+    //   "https://mapmetricblob.blob.core.windows.net/mapmetric/Users/jimvanderheiden/DEVPROG/protomaps/basemaps/styles/AtlasGlowMarker.json";
+    // String nightFile =
+    // "https://mapmetricblob.blob.core.windows.net/mapmetric/Users/jimvanderheiden/DEVPROG/protomaps/basemaps/styles/AtlasGlowMarker.json";
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -162,22 +170,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   initZoom: 15,
                   // initStyle:
                   //     "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
-                  initStyle:
-                      widget.isDarkMode
-                          ? "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token"
-                          : "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token",
+                  initStyle: widget.isDarkMode ? nightFile : lightFile,
                 ),
                 onEvent: _onEvent,
                 layers: [
-                  // MarkerLayer(
-                  //   points: _points,
-                  //   textField: 'Marker',
-                  //   textAllowOverlap: true,
-                  //   iconImage: _imageLoaded ? 'marker' : null,
-                  //   iconSize: 0.08,
-                  //   iconAnchor: IconAnchor.bottom,
-                  //   textOffset: const [0, 1],
-                  // ),
+                  MarkerLayer(
+                    points: _points,
+                    textField: 'Marker',
+                    textAllowOverlap: true,
+                    iconImage: _imageLoaded ? 'marker' : null,
+                    iconSize: 0.08,
+                    iconAnchor: IconAnchor.bottom,
+                    textOffset: const [0, 1],
+                  ),
                 ],
                 children: [
                   SourceAttribution(),
