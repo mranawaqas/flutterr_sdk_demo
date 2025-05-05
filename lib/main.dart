@@ -135,9 +135,9 @@ class _MyHomePageState extends State<MyHomePage> {
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
     }
     String nightFile =
-        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json&token=$token";
+        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token";
     String lightFile =
-        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json&token=$token";
+        "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/AtlasGlow.json?token=$token";
     //   String lightFile =
     //   "https://mapmetricblob.blob.core.windows.net/mapmetric/Users/jimvanderheiden/DEVPROG/protomaps/basemaps/styles/AtlasGlowMarker.json";
     // String nightFile =
@@ -273,10 +273,10 @@ class _MyHomePageState extends State<MyHomePage> {
             Center(child: Image.asset('src/bluepin.png', scale: 3)),
             Positioned(
               bottom: 80,
-              left: 20,
+              left: 10,
               child: Image.asset(
                 'src/logo.png', // <-- your icon path here
-                width: 85, // Adjust width if needed
+                width: 100, // Adjust width if needed
                 height: 25,
               ),
             ),
