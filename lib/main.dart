@@ -129,10 +129,10 @@ class _MyHomePageState extends State<MyHomePage> {
     String token = "";
     if (Platform.isAndroid) {
       token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUyODV9.O06EfF1-eg0EWjJuICstFrsHzKSPCtxJZYxXkMmkZjQ";
     } else {
       token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUxODV9.DvXGM_Xz2ve1JDkrSGk9LZFXpwNTLcnSe5b4JFeMFl4";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxYTc2OTU3ZC0yOGRlLTRkNzktYmUzNS0xODE1YTRmNjQ5NzMiLCJzY29wZSI6WyJtYXBzIiwiYXV0b2NvbXBsZXRlIiwiZ2VvY29kZSJdLCJpYXQiOjE3NDU4NDUyNDJ9.tz5olfEqMXOUUBUYF_IE_QXyZnwisxDUVPtDD-qWzu4";
     }
     String nightFile =
         "https://gateway.mapmetrics.org/basemaps-assets/examples/styles/NightGrid.json?token=$token";
@@ -174,15 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 onEvent: _onEvent,
                 layers: [
-                  MarkerLayer(
-                    points: _points,
-                    textField: 'Marker',
-                    textAllowOverlap: true,
-                    iconImage: _imageLoaded ? 'marker' : null,
-                    iconSize: 0.08,
-                    iconAnchor: IconAnchor.bottom,
-                    textOffset: const [0, 1],
-                  ),
+                  // MarkerLayer(
+                  //   points: _points,
+                  //   textField: 'Marker',
+                  //   textAllowOverlap: true,
+                  //   iconImage: _imageLoaded ? 'marker' : null,
+                  //   iconSize: 0.08,
+                  //   iconAnchor: IconAnchor.bottom,
+                  //   textOffset: const [0, 1],
+                  // ),
                 ],
                 children: [
                   SourceAttribution(),
