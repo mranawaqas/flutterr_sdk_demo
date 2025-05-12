@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -112,10 +113,23 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isSearched = false;
   final _points = <Point>[];
   bool _imageLoaded = false;
+  Timer? _debounceTimer;
+  bool _isCameraMoving = false;
+
+  //final _markerPositions = [];
+
+  Position? _originalPosition;
+  MapGestures _mapGestures = const MapGestures.all();
 
   animateCamera(Position latlng) {
     userLatLng = latlng;
     _controller.animateCamera(center: latlng, zoom: 15);
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
   Future<bool> _onWillPop() async {
@@ -145,17 +159,18 @@ class _MyHomePageState extends State<MyHomePage> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-          actions: [
-            Switch(
-              value: widget.isDarkMode,
-              onChanged: widget.onThemeChanged,
-              activeColor: Colors.white,
-              inactiveThumbColor: Colors.black,
-            ),
-          ],
-        ),
+        // appBar: AppBar(
+        //   title: Text(""),
+        //   backgroundColor: Colors.transparent,
+        //   actions: [
+        //     Switch(
+        //       value: widget.isDarkMode,
+        //       onChanged: widget.onThemeChanged,
+        //       activeColor: Colors.white,
+        //       inactiveThumbColor: Colors.black,
+        //     ),
+        //   ],
+        // ),
         body: Stack(
           children: [
             SizedBox(
@@ -168,23 +183,31 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 options: MapOptions(
                   initZoom: 15,
-                  // initStyle:
-                  //     "https://api.maptiler.com/maps/streets-v2/style.json?key=OPCgnZ51sHETbEQ4wnkd",
                   initStyle: widget.isDarkMode ? nightFile : lightFile,
+                  gestures: _mapGestures,
                 ),
                 onEvent: _onEvent,
-                layers: [
-                  // MarkerLayer(
-                  //   points: _points,
-                  //   textField: 'Marker',
-                  //   textAllowOverlap: true,
-                  //   iconImage: _imageLoaded ? 'marker' : null,
-                  //   iconSize: 0.08,
-                  //   iconAnchor: IconAnchor.bottom,
-                  //   textOffset: const [0, 1],
-                  // ),
-                ],
+                layers: [],
                 children: [
+                  WidgetLayer(
+                    allowInteraction: true,
+                    markers: List.generate(
+                      _points.length,
+                      (index) => Marker(
+                        size: const Size.square(50),
+                        point: _points[index].coordinates,
+                        child: GestureDetector(
+                          onTap: () => _onTap(index),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 50,
+                          ),
+                        ),
+                        alignment: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
                   SourceAttribution(),
                   MapScalebar(),
                   MapControlButtons(
@@ -208,77 +231,107 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
 
-            Container(
-              margin: const EdgeInsets.only(left: 23, right: 23, top: 15),
-              width: screenSize,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
-                boxShadow: [
-                  const BoxShadow(
-                    color: Color(0x6778849e),
-                    offset: Offset(0, 10),
-                    blurRadius: 15,
-                    spreadRadius: 5,
-                  ),
-                  const BoxShadow(color: Color(0x6778849e)),
-                  const BoxShadow(
-                    color: Color(0x6778849e),
-                    offset: Offset(0, -2),
-                    blurRadius: 5,
-                    spreadRadius: 5,
-                  ),
-                ],
+            // Top right theme switch
+            Positioned(
+              top: 50,
+              right: 10,
+              child: Switch(
+                value: widget.isDarkMode,
+                onChanged: widget.onThemeChanged,
+                activeColor: Colors.white,
+                inactiveThumbColor: Colors.black,
               ),
-              child: Center(
-                child: EditText(
-                  controller: searchEditTextController,
-                  textInputAction: TextInputAction.search,
-                  hintText: "Search Location",
-                  suffixIcon:
-                      isSearched
-                          ? "src/black_cross.png"
-                          : "src/search_icon.png",
-                  readOnly: true,
-                  onTap: () async {
-                    if (isSearched) {
-                      setState(() {
-                        isSearched = !isSearched;
-                        searchEditTextController.text = "";
-                      });
-                    } else {
-                      final sessionToken = Uuid().generateV4();
-                      final Suggestion? result = await showSearch(
-                        context: context,
-                        delegate: AddressSearch(sessionToken),
-                      );
-                      if (result != null) {
-                        searchEditTextController.text = result.label!;
-                        animateCamera(
-                          Position(
-                            result.coordinates[0],
-                            result.coordinates[1],
-                          ),
+            ),
+
+            // Search box
+            Positioned(
+              top: 120,
+              left: 23,
+              right: 23,
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x6778849e),
+                      offset: Offset(0, 10),
+                      blurRadius: 15,
+                      spreadRadius: 5,
+                    ),
+                    BoxShadow(color: Color(0x6778849e)),
+                    BoxShadow(
+                      color: Color(0x6778849e),
+                      offset: Offset(0, -2),
+                      blurRadius: 5,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: EditText(
+                    controller: searchEditTextController,
+                    textInputAction: TextInputAction.search,
+                    hintText: "Search Location",
+                    suffixIcon:
+                        isSearched
+                            ? "src/black_cross.png"
+                            : "src/search_icon.png",
+                    readOnly: true,
+                    onTap: () async {
+                      if (isSearched) {
+                        setState(() {
+                          _points.clear();
+                          isSearched = !isSearched;
+                          searchEditTextController.text = "";
+                        });
+                      } else {
+                        final sessionToken = Uuid().generateV4();
+                        final Suggestion? result = await showSearch(
+                          context: context,
+                          delegate: AddressSearch(sessionToken),
                         );
+                        if (result != null) {
+                          searchEditTextController.text = result.label!;
+                          animateCamera(
+                            Position(
+                              result.coordinates[0],
+                              result.coordinates[1],
+                            ),
+                          );
+                        }
+                        setState(() {
+                          isSearched = true;
+                        });
                       }
-                      setState(() {
-                        isSearched = true;
-                      });
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
             ),
-            Center(child: Image.asset('src/bluepin.png', scale: 3)),
+
+            // Pin icon on move
+            Visibility(
+              visible: _isCameraMoving,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isSearched = !isSearched;
+                      searchEditTextController.text = "";
+                    });
+                  },
+                  child: Image.asset('src/bluepin.png', scale: 3),
+                ),
+              ),
+            ),
+
+            // Logo at bottom
             Positioned(
               bottom: 80,
               left: 10,
-              child: Image.asset(
-                'src/logo.png', // <-- your icon path here
-                width: 100, // Adjust width if needed
-                height: 25,
-              ),
+              child: Image.asset('src/logo.png', width: 100, height: 25),
             ),
           ],
         ),
@@ -286,8 +339,51 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void _onTap(int index) {
+    HelpingMethods()
+        .getAddress(
+          _points[index].coordinates.lat.toDouble(),
+          _points[index].coordinates.lng.toDouble(),
+        )
+        .then((value) => _showMarkerDetails(value?.fullAddress ?? ""));
+  }
+
+  Future<void> _showMarkerDetails(String index) async {
+    await showDialog<void>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Details marker'),
+            content: Text(index),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+    );
+
+    return;
+  }
+
   Future<void> _onEvent(MapEvent event) async {
-    if (event is MapEventStyleLoaded) {
+    if (event is MapEventLongClick) {
+      //final position = event.point;
+      _points.clear();
+      _points.add(Point(coordinates: event.point));
+      isSearched = true;
+      setState(() {});
+      userLatLng = event.point;
+      HelpingMethods()
+          .getAddress(userLatLng!.lat.toDouble(), userLatLng!.lng.toDouble())
+          .then((value) => searchEditTextController.text = value!.fullAddress!);
+    } else if (event is MapEventStyleLoaded) {
       final response = await http.get(
         Uri.parse(
           'https://upload.wikimedia.org/wikipedia/commons/f/f2/678111-map-marker-512.png',
@@ -296,15 +392,12 @@ class _MyHomePageState extends State<MyHomePage> {
       final bytes = response.bodyBytes;
       await event.style.addImage('marker', bytes);
       setState(() {
-        print("loaded");
         _imageLoaded = true;
       });
     } else if (event is MapEventClick) {
-      print("here on long click");
-      print(event.point.lat);
-      setState(() {
-        _points.add(Point(coordinates: event.point));
-      });
+      // setState(() {
+      //   _points.add(Point(coordinates: event.point));
+      // });
     } else if (event is MapEventMapCreated) {
       if (event.mapController.camera != null) {
         userLatLng = event.mapController.camera!.center;
@@ -316,7 +409,36 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     } else if (event is MapEventMoveCamera) {
       userLatLng = event.camera.center;
+      // Show the moving icon
+      // if (!_isCameraMoving) {
+      //   setState(() {
+      //     _isCameraMoving = true;
+      //   });
+      // }
+      if (Platform.isIOS) {
+        _debounceTimer?.cancel();
+        _debounceTimer = Timer(Duration(milliseconds: 200), () {
+          HelpingMethods()
+              .getAddress(
+                userLatLng!.lat.toDouble(),
+                userLatLng!.lng.toDouble(),
+              )
+              .then((value) {
+                if (value != null) {
+                  searchEditTextController.text = value.fullAddress!;
+                }
+              });
+          // Hide the moving icon
+          // setState(() {
+          //   _isCameraMoving = false;
+          // });
+        });
+      }
     } else if (event is MapEventCameraIdle || event is MapEventIdle) {
+      // Hide the moving icon
+      // setState(() {
+      //   _isCameraMoving = false;
+      // });
       HelpingMethods()
           .getAddress(userLatLng!.lat.toDouble(), userLatLng!.lng.toDouble())
           .then((value) => searchEditTextController.text = value!.fullAddress!);
