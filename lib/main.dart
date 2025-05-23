@@ -139,6 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    print("hrere");
     double screenSize = MediaQuery.of(context).size.width;
     String token = "";
     if (Platform.isAndroid) {
@@ -198,10 +199,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         point: _points[index].coordinates,
                         child: GestureDetector(
                           onTap: () => _onTap(index),
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 50,
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: Image.asset('src/bluepin.png', scale: 3),
                           ),
                         ),
                         alignment: Alignment.bottomCenter,
@@ -251,7 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  //color: Colors.white,
                   borderRadius: BorderRadius.circular(5),
                   boxShadow: const [
                     BoxShadow(
@@ -271,6 +272,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 child: Center(
                   child: EditText(
+                    textColor:
+                        widget.isDarkMode ? Colors.white : Colors.black87,
+                    focusBordercolor:
+                        widget.isDarkMode ? Colors.black87 : Colors.white,
+                    bordercolor:
+                        widget.isDarkMode ? Colors.black87 : Colors.white,
+                    backgroundColor:
+                        widget.isDarkMode ? Colors.black87 : Colors.white,
                     controller: searchEditTextController,
                     textInputAction: TextInputAction.search,
                     hintText: "Search Location",

@@ -89,6 +89,7 @@ class EditText extends StatelessWidget {
   final IconData? prefixiconData;
   final TextInputType? textInputType;
   final Color? bordercolor;
+  final Color? textColor;
   final Color? backgroundColor;
   final Color? focusBordercolor;
   final List<TextInputFormatter>? inputFormatter;
@@ -118,6 +119,7 @@ class EditText extends StatelessWidget {
     this.onSaved,
     this.bordercolor = Colors.transparent,
     this.backgroundColor = Colors.transparent,
+    this.textColor = Colors.black,
     this.enableBorderRadius = 0,
     this.focusBorderRadius = 0,
     this.readOnly = false,
